@@ -1,26 +1,11 @@
-__author__ = 'Administrator'
-
 from PIL import Image, ImageDraw
-
-#[[a, b, t], []...]
-
-
-
 
 def gen_sortnet(n, start):
     def copy_net(net, dy, dt=0):
-        net2 = [v[:] for v in net]
-        for v in net2:
-            v[0] += dy
-            v[1] += dy
-            v[2] += dt
-        return net2
+        return [[v[0]+dy, v[1]+dy, v[2]+dt] for v in net]
 
     def gen_halfclean(n, start):
-        D = []
-        for i in range(n/2):
-            D.append([i, i+n/2, start+i])
-        return D
+        return [[i, i+n/2, start+i] for i in range(n/2)]
 
     def gen_bitonic(n, start):
         if n == 2:
@@ -32,34 +17,24 @@ def gen_sortnet(n, start):
             return L + R1 + R2
 
     def gen_right(n, start):
-        L = []
-        for i in range(n/2):
-            L.append([i, n-i-1, start+i])
+        L = [[i, n-i-1, start+i] for i in range(n/2)]
         R1 = gen_bitonic(n/2, start+n/2)
         R2 = copy_net(R1, n/2)
-
         return L + R1 + R2
 
     if n == 2:
         return gen_halfclean(n, start)
-
-    L1 = gen_sortnet(n/2, 0)
-    maxt = 0
-    for v in L1:
-        maxt = max(maxt, v[2])
-    L1 = copy_net(L1, 0, start-1-maxt-1)
-
-    L2 = copy_net(L1, n/2)
-
-    R = gen_right(n, start)
-
-    return L1 + L2 + R
+    else:
+        L1 = gen_sortnet(n/2, 0)
+        maxt = max([v[2] for v in L1]) 
+        L1 = copy_net(L1, 0, start-1-maxt-1)
+        L2 = copy_net(L1, n/2)
+        R = gen_right(n, start)
+        return L1 + L2 + R
 
 def sortnet(n):
     net = gen_sortnet(n, 0)
-    mint = 9999999
-    for v in net:
-        mint = min(v[2], mint)
+    mint = min([v[2] for v in net])
     for v in net:
         v[2] -= mint
     R = {}
